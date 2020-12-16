@@ -90,7 +90,7 @@ fn extract_grouping(value: ParsedInputValue) -> QueryGraphBuilderResult<Vec<Scal
             .collect::<QueryGraphBuilderResult<Vec<ScalarFieldRef>>>(),
 
         _ => {
-            return Err(QueryGraphBuilderError::InputError(
+            Err(QueryGraphBuilderError::InputError(
                 "Expected parsing to guarantee either a single enum or list a list of enums is provided for group by `by` arg.".to_owned(),
             ))
         }

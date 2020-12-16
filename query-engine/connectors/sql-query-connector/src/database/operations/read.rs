@@ -152,7 +152,7 @@ pub async fn aggregate(
     group_by: Vec<ScalarFieldRef>,
     query_arguments: QueryArguments,
 ) -> crate::Result<Vec<AggregationRow>> {
-    if group_by.len() > 0 {
+    if group_by.is_empty() {
         group_by_aggregate(conn, model, selections, group_by, query_arguments).await
     } else {
         plain_aggregate(conn, model, selections, query_arguments)

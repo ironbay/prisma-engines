@@ -104,7 +104,7 @@ pub trait ToSqlRow {
 }
 
 impl ToSqlRow for ResultRow {
-    fn to_sql_row<'b>(self, idents: &[(TypeIdentifier, FieldArity)]) -> crate::Result<SqlRow> {
+    fn to_sql_row(self, idents: &[(TypeIdentifier, FieldArity)]) -> crate::Result<SqlRow> {
         let mut row = SqlRow::default();
         let row_width = idents.len();
 

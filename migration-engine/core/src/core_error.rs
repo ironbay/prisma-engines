@@ -136,7 +136,7 @@ mod tests {
         "#;
 
         let err = datamodel::parse_datamodel(bad_dml)
-            .map_err(|err| CoreError::ProducedBadDatamodel(err))
+            .map_err(CoreError::ProducedBadDatamodel)
             .unwrap_err();
 
         assert_eq!(
