@@ -197,7 +197,7 @@ async fn removing_multi_field_unique_index_must_work(api: &TestApi) -> TestResul
         .table_bang("A")
         .indices
         .iter()
-        .find(|i| i.columns == &["field", "secondField"]);
+        .find(|i| i.columns == ["field", "secondField"]);
     assert!(index.is_some());
     assert_eq!(index.unwrap().tpe, IndexType::Unique);
 
@@ -215,7 +215,7 @@ async fn removing_multi_field_unique_index_must_work(api: &TestApi) -> TestResul
         .table_bang("A")
         .indices
         .iter()
-        .find(|i| i.columns == &["field", "secondField"]);
+        .find(|i| i.columns == ["field", "secondField"]);
     assert!(index.is_none());
 
     Ok(())
@@ -309,7 +309,7 @@ async fn index_renaming_must_work_when_renaming_to_default(api: &TestApi) {
         .table_bang("A")
         .indices
         .iter()
-        .filter(|i| i.columns == &["field", "secondField"] && i.name == "A.field_secondField_unique");
+        .filter(|i| i.columns == ["field", "secondField"] && i.name == "A.field_secondField_unique");
     assert_eq!(indexes.count(), 1);
 }
 
@@ -372,7 +372,7 @@ async fn index_updates_with_rename_must_work(api: &TestApi) -> TestResult {
         .table_bang("A")
         .indices
         .iter()
-        .find(|i| i.name == "customName" && i.columns == &["field", "secondField"]);
+        .find(|i| i.name == "customName" && i.columns == ["field", "secondField"]);
     assert!(index.is_some());
     assert_eq!(index.unwrap().tpe, IndexType::Unique);
 
@@ -394,7 +394,7 @@ async fn index_updates_with_rename_must_work(api: &TestApi) -> TestResult {
         .table_bang("A")
         .indices
         .iter()
-        .filter(|i| i.columns == &["field", "id"] && i.name == "customNameA");
+        .filter(|i| i.columns == ["field", "id"] && i.name == "customNameA");
     assert_eq!(indexes.count(), 1);
 
     Ok(())
@@ -417,8 +417,7 @@ async fn dropping_a_model_with_a_multi_field_unique_index_must_work(api: &TestAp
         .table_bang("A")
         .indices
         .iter()
-        .find(|i| i.name == "customName" && i.columns == &["field", "secondField"]);
-
+        .find(|i| i.name == "customName" && i.columns == ["field", "secondField"]);
     assert!(index.is_some());
     assert_eq!(index.unwrap().tpe, IndexType::Unique);
 

@@ -42,14 +42,7 @@ pub(crate) fn aggregation_object_type(ctx: &mut BuilderContext, model: &ModelRef
 
     append_opt(
         &mut object_fields,
-        aggregation_field(
-            ctx,
-            "sum",
-            &model,
-            numeric_fields.clone(),
-            map_scalar_output_type,
-            identity,
-        ),
+        aggregation_field(ctx, "sum", &model, numeric_fields, map_scalar_output_type, identity),
     );
 
     append_opt(

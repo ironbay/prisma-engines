@@ -49,14 +49,7 @@ pub(crate) fn group_by_output_object_type(ctx: &mut BuilderContext, model: &Mode
 
     append_opt(
         &mut object_fields,
-        aggregation_field(
-            ctx,
-            "sum",
-            &model,
-            numeric_fields.clone(),
-            map_scalar_output_type,
-            identity,
-        ),
+        aggregation_field(ctx, "sum", &model, numeric_fields, map_scalar_output_type, identity),
     );
 
     append_opt(
