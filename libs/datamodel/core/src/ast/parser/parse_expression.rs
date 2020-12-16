@@ -1,7 +1,3 @@
-use once_cell::sync::Lazy;
-use regex::Regex;
-use std::borrow::Cow;
-
 use super::helpers::{parsing_catch_all, Token, TokenExtensions};
 use super::Rule;
 use crate::ast::*;
@@ -65,7 +61,7 @@ pub fn parse_arg_value(token: &Token) -> Expression {
 fn parse_string_literal(token: &Token) -> String {
     let current = token.first_relevant_child();
     match current.as_rule() {
-        Rule::string_content => unescape_string_literal(current.as_str()).into_owned(),
+        Rule::string_content => unescape_string_literal(current.as_str()),
         _ => unreachable!(
             "Encountered impossible string content during parsing: {:?}",
             current.tokens()
@@ -73,19 +69,9 @@ fn parse_string_literal(token: &Token) -> String {
     }
 }
 
-fn unescape_string_literal(original: &str) -> Cow<'_, str> {
-    static STRING_LITERAL_UNESCAPE_RE: Lazy<Regex> = Lazy::new(|| Regex::new(r#"\\(")"#).unwrap());
-    static STRING_LITERAL_BACKSLASHES_RE: Lazy<Regex> = Lazy::new(|| Regex::new(r#"\\\\"#).unwrap());
-    static STRING_LITERAL_NEWLINE_RE: Lazy<Regex> = Lazy::new(|| Regex::new(r#"\\n"#).unwrap());
-
-    match STRING_LITERAL_UNESCAPE_RE.replace_all(original, "\"") {
-        Cow::Owned(s) => match STRING_LITERAL_NEWLINE_RE.replace_all(&s, "\n") {
-            Cow::Owned(s) => STRING_LITERAL_BACKSLASHES_RE.replace_all(&s, "\\").into_owned().into(),
-            Cow::Borrowed(s) => STRING_LITERAL_BACKSLASHES_RE.replace_all(s, "\\").into_owned().into(),
-        },
-        Cow::Borrowed(s) => match STRING_LITERAL_NEWLINE_RE.replace_all(s, "\n") {
-            Cow::Owned(s) => STRING_LITERAL_BACKSLASHES_RE.replace_all(&s, "\\").into_owned().into(),
-            Cow::Borrowed(s) => STRING_LITERAL_BACKSLASHES_RE.replace_all(s, "\\").into_owned().into(),
-        },
-    }
+fn unescape_string_literal(original: &str) -> String {
+    original
+        .replace(r#"\""#, r#"""#)
+        .replace(r#"\\"#, r#"\"#)
+        .replace(r#"\\n"#, r#"\n"#)
 }
