@@ -71,7 +71,7 @@ fn parse_string_literal(token: &Token) -> String {
 
 fn unescape_string_literal(original: &str) -> String {
     original
-        .replace(r#"\""#, r#"""#)
-        .replace(r#"\\"#, r#"\"#)
-        .replace(r#"\\n"#, r#"\n"#)
+        .replace("\\\"", "\"")
+        .replace("\\n", "\n")
+        .replace("\\\\", "\\")
 }
