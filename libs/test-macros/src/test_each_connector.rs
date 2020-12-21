@@ -173,6 +173,10 @@ pub fn test_each_connector_impl(attr: TokenStream, input: TokenStream) -> TokenS
         Err(err) => return err.write_errors().into(),
     };
 
+    if test_function.sig.asyncness.is_none() {
+        return test_each_connector_sync(&args, &test_function).into();
+    }
+
     let tests = test_each_connector_async_wrapper_functions(&args, &test_function);
 
     let optional_logging_import = args.log.as_ref().map(|_| {
@@ -216,6 +220,41 @@ pub fn test_each_connector_impl(attr: TokenStream, input: TokenStream) -> TokenS
     output.into()
 }
 
+fn test_each_connector_sync(args: &TestEachConnectorArgs, test_function: &ItemFn) -> proc_macro2::TokenStream {
+    let test_name = &test_function.sig.ident;
+    let test_fn_name_str = test_name.to_string();
+
+    let mut tests = Vec::new();
+
+    for connector in args.connectors_to_test() {
+        let connector_name = Ident::new(connector.name(), Span::call_site());
+        let connector_api_factory = Ident::new(connector.test_api(), Span::call_site());
+        let tags = connector.tags.bits();
+        let features = args.features.0.bits();
+
+        tests.push(quote! {
+            #[test]
+            fn #connector_name() {
+                let mut runtime = test_setup::runtime::tokio_runtime();
+                let args = test_setup::TestAPIArgs::new(#test_fn_name_str, #tags, #features, Some(runtime.handle().clone()));
+                let api = runtime.block_on(super::#connector_api_factory(args));
+                dbg!("got here");
+                super::#test_name(&api).unwrap();
+                runtime.shutdown_background()
+            }
+        });
+    }
+
+    quote!(
+        #test_function
+
+        mod #test_name {
+            #(#tests)*
+        }
+    )
+    .into()
+}
+
 fn test_each_connector_async_wrapper_functions(
     args: &TestEachConnectorArgs,
     test_function: &ItemFn,
@@ -232,7 +271,7 @@ fn test_each_connector_async_wrapper_functions(
         let test = quote! {
             #[test]
             fn #connector_test_fn_name() {
-                let test_api_args = test_setup::TestAPIArgs::new(#test_fn_name_str, #tags, #features);
+                let test_api_args = test_setup::TestAPIArgs::new(#test_fn_name_str, #tags, #features, None);
                 run(Box::pin(super::#connector_api_factory(test_api_args)))
             }
         };

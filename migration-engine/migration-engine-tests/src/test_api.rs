@@ -50,7 +50,7 @@ use test_setup::*;
 pub struct TestApi {
     database: Quaint,
     api: MigrationApi<SqlMigrationConnector, SqlMigration>,
-    tags: BitFlags<Tags>,
+    args: TestAPIArgs,
 }
 
 impl TestApi {
@@ -63,19 +63,19 @@ impl TestApi {
     }
 
     pub fn is_sqlite(&self) -> bool {
-        self.tags.contains(Tags::Sqlite)
+        self.args.test_tag.contains(Tags::Sqlite)
     }
 
     pub fn is_mysql(&self) -> bool {
-        self.tags.contains(Tags::Mysql)
+        self.args.test_tag.contains(Tags::Mysql)
     }
 
     pub fn is_mysql_8(&self) -> bool {
-        self.tags.contains(Tags::Mysql8)
+        self.args.test_tag.contains(Tags::Mysql8)
     }
 
     pub fn is_mariadb(&self) -> bool {
-        self.tags.contains(Tags::Mariadb)
+        self.args.test_tag.contains(Tags::Mariadb)
     }
 
     pub async fn migration_persistence(&self) -> &dyn MigrationPersistence {
@@ -200,7 +200,7 @@ impl TestApi {
     }
 
     pub fn schema_push(&self, dm: impl Into<String>) -> SchemaPush<'_> {
-        SchemaPush::new(&self.api, dm.into())
+        SchemaPush::new(&self.api, dm.into(), self.args.handle.clone())
     }
 
     pub fn barrel(&self) -> BarrelMigrationExecutor<'_> {
@@ -341,7 +341,7 @@ pub async fn mysql_8_test_api(args: TestAPIArgs) -> TestApi {
     TestApi {
         database: connector.quaint().clone(),
         api: MigrationApi::new(connector).await.unwrap(),
-        tags: args.test_tag,
+        args,
     }
 }
 
@@ -354,7 +354,7 @@ pub async fn mysql_5_6_test_api(args: TestAPIArgs) -> TestApi {
     TestApi {
         database: connector.quaint().clone(),
         api: MigrationApi::new(connector).await.unwrap(),
-        tags: args.test_tag,
+        args,
     }
 }
 
@@ -367,7 +367,7 @@ pub async fn mysql_test_api(args: TestAPIArgs) -> TestApi {
     TestApi {
         database: connector.quaint().clone(),
         api: MigrationApi::new(connector).await.unwrap(),
-        tags: args.test_tag,
+        args,
     }
 }
 
@@ -380,7 +380,7 @@ pub async fn mysql_mariadb_test_api(args: TestAPIArgs) -> TestApi {
     TestApi {
         database: connector.quaint().clone(),
         api: MigrationApi::new(connector).await.unwrap(),
-        tags: args.test_tag,
+        args,
     }
 }
 
@@ -393,7 +393,7 @@ pub async fn postgres9_test_api(args: TestAPIArgs) -> TestApi {
     TestApi {
         database: connector.quaint().clone(),
         api: MigrationApi::new(connector).await.unwrap(),
-        tags: args.test_tag,
+        args,
     }
 }
 
@@ -406,7 +406,7 @@ pub async fn postgres_test_api(args: TestAPIArgs) -> TestApi {
     TestApi {
         database: connector.quaint().clone(),
         api: MigrationApi::new(connector).await.unwrap(),
-        tags: args.test_tag,
+        args,
     }
 }
 
@@ -419,7 +419,7 @@ pub async fn postgres11_test_api(args: TestAPIArgs) -> TestApi {
     TestApi {
         database: connector.quaint().clone(),
         api: MigrationApi::new(connector).await.unwrap(),
-        tags: args.test_tag,
+        args,
     }
 }
 
@@ -431,7 +431,7 @@ pub async fn postgres12_test_api(args: TestAPIArgs) -> TestApi {
     TestApi {
         database: connector.quaint().clone(),
         api: MigrationApi::new(connector).await.unwrap(),
-        tags: args.test_tag,
+        args,
     }
 }
 
@@ -443,7 +443,7 @@ pub async fn postgres13_test_api(args: TestAPIArgs) -> TestApi {
     TestApi {
         database: connector.quaint().clone(),
         api: MigrationApi::new(connector).await.unwrap(),
-        tags: args.test_tag,
+        args,
     }
 }
 
@@ -455,7 +455,7 @@ pub async fn sqlite_test_api(args: TestAPIArgs) -> TestApi {
     TestApi {
         database: connector.quaint().clone(),
         api: MigrationApi::new(connector).await.unwrap(),
-        tags: args.test_tag,
+        args,
     }
 }
 
@@ -479,7 +479,7 @@ async fn mssql_test_api(connection_string: String, args: TestAPIArgs) -> TestApi
     TestApi {
         database: connector.quaint().clone(),
         api: MigrationApi::new(connector).await.unwrap(),
-        tags: args.test_tag,
+        args,
     }
 }
 

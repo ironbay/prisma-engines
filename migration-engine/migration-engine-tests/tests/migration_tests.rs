@@ -2498,7 +2498,7 @@ async fn adding_mutual_references_on_existing_tables_works(api: &TestApi) -> Tes
 }
 
 #[test_each_connector]
-async fn schemas_with_dbgenerated_work(api: &TestApi) -> TestResult {
+fn schemas_with_dbgenerated_work(api: &TestApi) -> TestResult {
     let dm1 = r#"
     model User {
         age         Int?
@@ -2512,7 +2512,9 @@ async fn schemas_with_dbgenerated_work(api: &TestApi) -> TestResult {
     }
     "#;
 
-    api.schema_push(dm1).send().await?.assert_green()?;
+    dbg!("got here");
+    api.schema_push(dm1).send_sync()?.assert_green()?;
+    dbg!("got here");
 
     Ok(())
 }

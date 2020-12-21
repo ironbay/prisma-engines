@@ -13,15 +13,17 @@ pub struct SchemaPush<'a> {
     force: bool,
     /// Purely for logging diagnostics.
     migration_id: Option<&'a str>,
+    handle: Option<tokio::runtime::Handle>,
 }
 
 impl<'a> SchemaPush<'a> {
-    pub fn new(api: &'a dyn GenericApi, schema: String) -> Self {
+    pub(super) fn new(api: &'a dyn GenericApi, schema: String, handle: Option<tokio::runtime::Handle>) -> Self {
         SchemaPush {
             api,
             schema,
             force: false,
             migration_id: None,
+            handle,
         }
     }
 
@@ -52,6 +54,10 @@ impl<'a> SchemaPush<'a> {
             result: output,
             _api: self.api,
         })
+    }
+
+    pub fn send_sync(self) -> CoreResult<SchemaPushAssertion<'a>> {
+        self.handle.clone().unwrap().block_on(self.send())
     }
 }
 

@@ -30,10 +30,11 @@ pub struct TestAPIArgs {
     pub test_function_name: &'static str,
     pub test_tag: BitFlags<Tags>,
     pub test_features: BitFlags<Features>,
+    pub handle: Option<tokio::runtime::Handle>,
 }
 
 impl TestAPIArgs {
-    pub fn new(name: &'static str, tags: u16, features: u8) -> Self {
+    pub fn new(name: &'static str, tags: u16, features: u8, handle: Option<tokio::runtime::Handle>) -> Self {
         let tags: BitFlags<Tags> = BitFlags::from_bits(tags).unwrap();
         let features: BitFlags<Features> = BitFlags::from_bits(features).unwrap();
 
@@ -41,6 +42,7 @@ impl TestAPIArgs {
             test_function_name: name,
             test_tag: tags,
             test_features: features,
+            handle,
         }
     }
 }
