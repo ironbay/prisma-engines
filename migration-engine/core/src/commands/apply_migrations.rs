@@ -41,6 +41,8 @@ impl<'a> MigrationCommand for ApplyMigrationsCommand {
         let applier = connector.database_migration_step_applier();
         let migration_persistence = connector.new_migration_persistence();
 
+        connector.acquire_lock().await?;
+
         migration_persistence.initialize().await?;
 
         let migrations_from_filesystem =

@@ -32,9 +32,10 @@ impl MigrationCommand for MarkMigrationAppliedCommand {
         C: migration_connector::MigrationConnector<DatabaseMigration = D>,
         D: migration_connector::DatabaseMigrationMarker + Send + Sync + 'static,
     {
-        // We should take a lock on the migrations table.
+        let connector = engine.connector();
+        let persistence = connector.new_migration_persistence();
 
-        let persistence = engine.connector().new_migration_persistence();
+        connector.acquire_lock().await?;
 
         let migration_directory =
             MigrationDirectory::new(Path::new(&input.migrations_directory_path).join(&input.migration_name));

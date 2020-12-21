@@ -28,9 +28,10 @@ impl MigrationCommand for MarkMigrationRolledBackCommand {
         C: migration_connector::MigrationConnector<DatabaseMigration = D>,
         D: migration_connector::DatabaseMigrationMarker + Send + Sync + 'static,
     {
-        // We should take a lock on the migrations table.
+        let connector = engine.connector();
+        let persistence = connector.new_migration_persistence();
 
-        let persistence = engine.connector().new_migration_persistence();
+        connector.acquire_lock().await?;
 
         let all_migrations = persistence.list_migrations().await?.map_err(|_err| {
             CoreError::Generic(anyhow::anyhow!(
