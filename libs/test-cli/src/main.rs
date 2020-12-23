@@ -1,3 +1,5 @@
+mod migrate;
+
 use anyhow::Context;
 use colored::Colorize;
 use enumflags2::BitFlags;
@@ -21,6 +23,30 @@ enum Command {
     Dmmf(DmmfCommand),
     /// Push a prisma schema directly to the database, without interacting with migrations.
     SchemaPush(SchemaPush),
+    Migrate(Migrate),
+}
+
+#[derive(StructOpt)]
+struct Migrate {
+    #[structopt(long)]
+    schema_path: Option<String>,
+    #[structopt(subcommand)]
+    command: MigrateCommand,
+}
+
+#[derive(StructOpt)]
+enum MigrateCommand {
+    Dev(MigrateDev),
+    Deploy,
+    Reset,
+}
+
+#[derive(StructOpt)]
+struct MigrateDev {
+    #[structopt(long)]
+    create_only: bool,
+    #[structopt(long)]
+    name: String,
 }
 
 #[derive(StructOpt)]
@@ -49,6 +75,7 @@ async fn main() -> anyhow::Result<()> {
     init_logger();
 
     match Command::from_args() {
+        Command::Migrate(cmd) => migrate::handle(&cmd).await?,
         Command::Dmmf(cmd) => generate_dmmf(&cmd).await?,
         Command::SchemaPush(cmd) => schema_push(&cmd).await?,
         Command::Introspect { url, file_path } => {
