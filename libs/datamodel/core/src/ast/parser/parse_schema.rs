@@ -4,6 +4,7 @@ use super::{
     helpers::{parsing_catch_all, TokenExtensions},
     parse_enum::parse_enum,
     parse_model::parse_model,
+    parse_embed::parse_embed,
     parse_source_and_generator::{parse_generator, parse_source},
     parse_types::parse_type_alias,
     PrismaDatamodelParser, Rule,
@@ -24,6 +25,10 @@ pub fn parse_schema(datamodel_string: &str) -> Result<SchemaAst, Diagnostics> {
                 match current.as_rule() {
                     Rule::model_declaration => match parse_model(&current) {
                         Ok(model) => top_level_definitions.push(Top::Model(model)),
+                        Err(mut err) => errors.append(&mut err),
+                    },
+                    Rule::embed_declaration => match parse_embed(&current) {
+                        Ok(embed) => top_level_definitions.push(Top::Embed(embed)),
                         Err(mut err) => errors.append(&mut err),
                     },
                     Rule::enum_declaration => match parse_enum(&current) {
@@ -87,6 +92,7 @@ fn get_expected_from_error(positives: &[Rule]) -> Vec<&'static str> {
 fn rule_to_string(rule: Rule) -> &'static str {
     match rule {
         Rule::model_declaration => "model declaration",
+        Rule::embed_declaration => "embed declaration",
         Rule::enum_declaration => "enum declaration",
         Rule::source_block => "source definition",
         Rule::generator_block => "generator definition",
@@ -129,6 +135,7 @@ fn rule_to_string(rule: Rule) -> &'static str {
         Rule::BLOCK_OPEN => "Start of block (\"{\")",
         Rule::BLOCK_CLOSE => "End of block (\"}\")",
         Rule::MODEL_KEYWORD => "\"model\" keyword",
+        Rule::EMBED_KEYWORD => "\"embed\" keyword",
         Rule::TYPE_KEYWORD => "\"type\" keyword",
         Rule::ENUM_KEYWORD => "\"enum\" keyword",
         Rule::GENERATOR_KEYWORD => "\"generator\" keyword",

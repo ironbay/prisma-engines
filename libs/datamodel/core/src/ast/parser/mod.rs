@@ -5,6 +5,7 @@ mod parse_enum;
 mod parse_expression;
 mod parse_field;
 mod parse_model;
+mod parse_embed;
 mod parse_schema;
 mod parse_source_and_generator;
 mod parse_types;
