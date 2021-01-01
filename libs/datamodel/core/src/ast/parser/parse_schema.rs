@@ -21,6 +21,7 @@ pub fn parse_schema(datamodel_string: &str) -> Result<SchemaAst, Diagnostics> {
         Ok(mut datamodel_wrapped) => {
             let datamodel = datamodel_wrapped.next().unwrap();
             let mut top_level_definitions: Vec<Top> = vec![];
+            let mut embeds: Vec<Embed> = vec![];
             for current in datamodel.relevant_children() {
                 match current.as_rule() {
                     Rule::model_declaration => match parse_model(&current) {
@@ -28,7 +29,7 @@ pub fn parse_schema(datamodel_string: &str) -> Result<SchemaAst, Diagnostics> {
                         Err(mut err) => errors.append(&mut err),
                     },
                     Rule::embed_declaration => match parse_embed(&current) {
-                        Ok(embed) => top_level_definitions.push(Top::Embed(embed)),
+                        Ok(embed) => embeds.push(embed),
                         Err(mut err) => errors.append(&mut err),
                     },
                     Rule::enum_declaration => match parse_enum(&current) {
@@ -58,11 +59,35 @@ pub fn parse_schema(datamodel_string: &str) -> Result<SchemaAst, Diagnostics> {
                 }
             }
 
-            errors.to_result()?;
 
-            Ok(SchemaAst {
+
+            errors.to_result()?;
+            let mut schema = SchemaAst {
                 tops: top_level_definitions,
-            })
+            };
+            for model in schema.tops.iter_mut().filter_map(|top| match top {
+                Top::Model(x) => Some(x),
+                    _ => None
+            }) {
+                let mut to_add: Vec<Field> = vec![];
+                model.fields.retain(|field| {
+                    if let Some(embed) = embeds.iter().find(|e| e.name.name == field.field_type.name)  {
+                        for embed_field in &embed.fields {
+                            let mut cloned = embed_field.clone();
+                            let mut name = field.name.name.to_owned();
+                            name.push_str("_");
+                            name.push_str(&embed_field.name.name);
+                            cloned.name = Identifier::new(&name);
+                            to_add.push(cloned);
+                        }
+                        return false
+                    }
+                    return true
+                });
+                model.fields.append(&mut to_add);
+            }
+
+            Ok(schema)
         }
         Err(err) => {
             let location = match err.location {

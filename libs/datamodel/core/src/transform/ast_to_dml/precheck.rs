@@ -36,11 +36,6 @@ impl Precheck {
                     top_level_types_checker.check_if_duplicate_exists(top, error_fn);
                     Self::precheck_model(&model, &mut errors);
                 }
-                ast::Top::Embed(embed) => {
-                    Self::assert_is_not_a_reserved_scalar_type(&embed.name, &mut errors);
-                    top_level_types_checker.check_if_duplicate_exists(top, error_fn);
-                    Self::precheck_embed(&embed, &mut errors);
-                }
                 ast::Top::Type(custom_type) => {
                     Self::assert_is_not_a_reserved_scalar_type(&custom_type.name, &mut errors);
                     top_level_types_checker.check_if_duplicate_exists(top, error_fn);
@@ -89,16 +84,6 @@ impl Precheck {
         for field in &model.fields {
             checker.check_if_duplicate_exists(field, |_| {
                 DatamodelError::new_duplicate_field_error(&model.name.name, &field.name.name, field.identifier().span)
-            });
-        }
-        errors.append(&mut checker.errors());
-    }
-
-    fn precheck_embed(embed: &ast::Embed, errors: &mut Diagnostics) {
-        let mut checker = DuplicateChecker::new();
-        for field in &embed.fields {
-            checker.check_if_duplicate_exists(field, |_| {
-                DatamodelError::new_duplicate_field_error(&embed.name.name, &field.name.name, field.identifier().span)
             });
         }
         errors.append(&mut checker.errors());

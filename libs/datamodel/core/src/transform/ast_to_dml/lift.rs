@@ -54,7 +54,6 @@ impl<'a, 'b> LiftAstToDml<'a, 'b> {
                 ast::Top::Generator(_) => { /* Generator blocks are explicitly ignored by the validator */ }
                 // TODO: For now, type blocks are never checked on their own.
                 ast::Top::Type(_) => { /* Type blocks are inlined */ }
-                ast::Top::Embed(_) => { /* Embeds are syntatic sugar */ }
             }
         }
 

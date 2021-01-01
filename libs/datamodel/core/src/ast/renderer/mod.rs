@@ -67,7 +67,6 @@ impl<'a> Renderer<'a> {
 
                     match other {
                         ast::Top::Model(model) => self.render_model(model),
-                        ast::Top::Embed(embed) => self.render_embed(embed),
                         ast::Top::Enum(enm) => self.render_enum(enm),
                         ast::Top::Source(source) => self.render_source_block(source),
                         ast::Top::Generator(generator) => self.render_generator_block(generator),
@@ -205,42 +204,6 @@ impl<'a> Renderer<'a> {
         self.end_line();
     }
 
-    fn render_embed(&mut self, model: &ast::Embed) {
-        let comment_out = if model.commented_out {
-            "// ".to_string()
-        } else {
-            "".to_string()
-        };
-
-        Self::render_documentation(self, model);
-
-        self.write(format!("{}embed", comment_out).as_ref());
-        self.write(&model.name.name);
-        self.write(" {");
-        self.end_line();
-        self.indent_up();
-
-        let mut field_formatter = TableFormat::new();
-
-        for field in &model.fields {
-            Self::render_field(&mut field_formatter, &field, model.commented_out);
-        }
-
-        field_formatter.render(self);
-
-        if !model.attributes.is_empty() {
-            self.end_line();
-            // sort attributes
-            let attributes = Self::sort_attributes(model.attributes.clone(), false);
-            for attribute in attributes {
-                self.render_block_attribute(&attribute, comment_out.clone());
-            }
-        }
-
-        self.indent_down();
-        self.write(format!("{}{}", comment_out, "}").as_ref());
-        self.end_line();
-    }
 
     fn sort_attributes(mut attributes: Vec<Attribute>, is_field_attribute: bool) -> Vec<Attribute> {
         // sort attributes
